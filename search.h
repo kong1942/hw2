@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
-#define HASHNUM 65
+#define HASHNUM 997
 #define int32 unsigned int
 #define int64 long long
 #define TRUE 1
@@ -63,13 +63,31 @@ void H_traversalN(struct LL **hTab);
 void H_t(struct LL **hTab);
 
 //RBT
-struct RBTnode
+struct RBnode
+{
+	int64 key;
+	char rb;
+	struct RBnode *P;
+	struct RBnode *L;
+	struct RBnode *R;
+};
+void init(struct RBnode *R);
+void RB_Lrotate(struct RBnode *R);
+void RB_Rrotate(struct RBnode *R);
+struct RBnode *RB_insertN(struct RBnode *R, int64 key);
+struct RBnode *RB_findN(struct RBnode *R, int64 key);
+struct RBnode *RB_balance(struct RBnode *N);
+void RB_traversalN(struct RBnode *R);	//Postorder
+void RB_t(struct RBnode *R);	//Inorder
+
+//AVLT
+struct AVLnode
 {
 
 };
 
-//AVLT
-struct AVLnode
+//B+T
+struct Bnode
 {
 
 };

@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 
 	if(!fileOK)
 	{
-		srand(0);
+		srand(time(NULL));
 		for(int32 i=0; i<num_of_query; i++)
 			fprintf(fp2, "%d\n", rand());
 	}
@@ -107,7 +107,6 @@ int main(int argc, char **argv)
 		{
 			struct LL *head = NULL;
 			struct LL *find = NULL;
-			int32 len;
 
 			gettimeofday(&istart, NULL);
 			while(fscanf(fp, "%lld", &num) != EOF)
@@ -134,7 +133,7 @@ int main(int argc, char **argv)
 		{
 			struct ARR *head = (struct ARR *)malloc(sizeof(struct ARR) * num_of_data);
 			struct ARR *find = NULL;
-			int32 len, j=0;
+			int32 j=0;
 
 			gettimeofday(&istart, NULL);
 			while(fscanf(fp, "%lld", &num) != EOF && j < num_of_data)
@@ -162,7 +161,7 @@ int main(int argc, char **argv)
 		{
 			struct ABS *head = (struct ABS *)malloc(sizeof(struct ABS) * num_of_data);
 			struct ABS *find = NULL;
-			int32 len, j=0;
+			int32 j=0;
 		
 			gettimeofday(&istart, NULL);
 			while(fscanf(fp, "%lld", &num) != EOF && j < num_of_data)
@@ -190,7 +189,6 @@ int main(int argc, char **argv)
 		{
 			struct BST *root = NULL;
 			struct BST *find = NULL;
-			int32 len;
 			
 			gettimeofday(&istart, NULL);
 			while(fscanf(fp, "%lld", &num) != EOF)
@@ -218,7 +216,6 @@ int main(int argc, char **argv)
 			struct LL *find = NULL;
 			for(int32 i=0; i<HASHNUM; i++)
 				hTab[i] = NULL;
-			int32 len;
 
 			gettimeofday(&istart, NULL);
 			while(fscanf(fp, "%lld", &num) != EOF)
@@ -240,15 +237,39 @@ int main(int argc, char **argv)
 //			H_t(hTab);
 			H_traversalN(hTab);
 		}
-		/*
+		
 		else if(!strcmp(argv[i], "-rbt"))
 		{
-		
+			struct RBnode *root = NULL;
+			struct RBnode *find = NULL;
+			
+			gettimeofday(&istart, NULL);
+			while(fscanf(fp, "%lld", &num) != EOF)
+			{
+				root = RB_insertN(root, num);
+				root = RB_balance(root);
+			}
+			gettimeofday(&iend, NULL);
+			idiff = (double) (1000000 * (iend.tv_sec - istart.tv_sec) + iend.tv_usec - istart.tv_usec)/1000000;
+			
+			gettimeofday(&qstart, NULL);
+			while(fscanf(fp2, "%lld", &num) != EOF)
+			{
+				find = RB_findN(root, num);
+			}
+			gettimeofday(&qend, NULL);
+			qdiff = (double) (1000000 * (qend.tv_sec - qstart.tv_sec) + qend.tv_usec - qstart.tv_usec)/1000000;
+			
+			printf("rbt:\nbuilding time:\t%f sec\nquery time:\t%f sec\n", idiff, qdiff);
+//			RB_t(root);
+			RB_traversalN(root);
 		}
-		else if(!strcmp(argv[i], "-avl"))
+		/*
+		else if(!strcmp(argv[i], "-avlt"))
 		{
 		
 		}
+		else if(!strcmp(argv[i], "-bpt"))
 		*/
 		else errmsg("Data Structure error");
 		printf("\n");
