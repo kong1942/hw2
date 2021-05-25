@@ -269,7 +269,6 @@ int main(int argc, char **argv)
 		{
 		
 		}
-		else if(!strcmp(argv[i], "-bpt"))
 		*/
 		else errmsg("Data Structure error");
 		printf("\n");

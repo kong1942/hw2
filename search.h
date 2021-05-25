@@ -13,7 +13,7 @@
 
 void errmsg(char *str);
 
-//Linked list
+//Linked-list
 struct LL
 {
 	int64 key;
@@ -44,6 +44,7 @@ struct ABS *ABS_findN(struct ABS *H, int64 key, int32 size);
 void ABS_t(struct ABS *H, int32 size);
 
 //Binary Search Tree
+//L = Left child node, R = Right child node
 struct BST
 {
 	int64 key;
@@ -55,14 +56,15 @@ struct BST *T_findN(struct BST *R, int64 key);
 void T_traversalN(struct BST *R); //Postorder
 void T_t(struct BST *R); //Inorder
 
-//Hash
+//Hash997
 int32 H_hashN(int64 key);
 void H_insertN(struct LL **hTab, int64 key);
 struct LL *H_findN(struct LL **hTab, int64 key);
 void H_traversalN(struct LL **hTab);
 void H_t(struct LL **hTab);
 
-//RBT
+//Red Black Tree
+//P = parent node, L = Left child node, R = Right child node
 struct RBnode
 {
 	int64 key;
@@ -71,7 +73,7 @@ struct RBnode
 	struct RBnode *L;
 	struct RBnode *R;
 };
-void init(struct RBnode *R);
+void RB_init(struct RBnode *R);
 void RB_Lrotate(struct RBnode *R);
 void RB_Rrotate(struct RBnode *R);
 struct RBnode *RB_insertN(struct RBnode *R, int64 key);
@@ -80,14 +82,21 @@ struct RBnode *RB_balance(struct RBnode *N);
 void RB_traversalN(struct RBnode *R);	//Postorder
 void RB_t(struct RBnode *R);	//Inorder
 
-//AVLT
+//AVL Tree
+//P = parent node, L = Left child node, R = Right child node
 struct AVLnode
 {
-
+	int64 key;
+	struct AVLnode *P;
+	struct AVLnode *L;
+	struct AVLnode *R;
 };
+void AVL_init(struct AVLnode *R);
+void AVL_Lrotate(struct AVLnode *R);
+void AVL_Rrotate(struct AVLnode *R);
+struct AVLnode *AVL_insertN(struct AVLnode *R, int64 key);
+struct AVLnode *AVL_findN(struct AVLnode *R, int64 key);
+struct AVLnode *AVL_balance(struct AVLnode *N);
+void AVL_traversalN(struct AVLnode *R);	//Postorder
+void AVL_t(struct AVLnode *R);	//Inorder
 
-//B+T
-struct Bnode
-{
-
-};

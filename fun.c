@@ -239,12 +239,12 @@ void H_t(struct LL **hTab)
 	}
 }
 
-//RBTree
+//Red Black Tree
 //1. root是黑色
 //2. 所有leaf都是黑色(NIL節點)
 //3. 所有紅色節點的子節點都是黑色
 //4. 任一節點到其leaf的所有簡單路徑都包含相同數目的黑色節點
-void init(struct RBnode *R)
+void RB_init(struct RBnode *R)
 {
 	R->rb = 'r';
 	R->P = NULL;
@@ -290,7 +290,7 @@ struct RBnode *RB_insertN(struct RBnode *R, int64 key)
 	if(R == NULL)
 	{
 		p = (struct RBnode *)malloc(sizeof(struct RBnode));
-		init(p);
+		RB_init(p);
 		p->key = key;
 		return p;
 	}
@@ -363,20 +363,20 @@ struct RBnode *RB_balance(struct RBnode *N)
 			G->rb = 'r';
 			RB_balance(G);
 		}
-		// case4_1. p->rb == red and (u->rb == black or u == NULL) and cur == p->right and p = g->left >>>>> rotate left
+		// case4_1. p->rb == red and (u->rb == black or u == NULL) and cur == p->right and p = g->left >>>> rotate left
 		else if(N->P->rb == 'r' && (U == NULL || U->rb == 'b') && N == N->P->R && N->P == G->L)
 		{
 			RB_Lrotate(N->P);
 			RB_balance(N->L);
 		}
-		// case4_2. p->rb == red and (u->rb == black or u == NULL) and cur == p->left and p = g->right >>>>> rotate right
+		// case4_2. p->rb == red and (u->rb == black or u == NULL) and cur == p->left and p = g->right >>>> rotate right
 		else if(N->P->rb == 'r' && (U == NULL || U->rb == 'b') && N == N->P->L && N->P == G->R)
 		{
 			RB_Rrotate(N->P);
 			RB_balance(N->R);
 		}
-		// case5_1. p->rb == red and (u->rb == black or u == NULL) and cur == p->left and p = g->left >>>>> rotate right
-		// case5_2. p->rb == red and (u->rb == black or u == NULL) and cur == p->right and p = g->right >>>>> rotate left
+		// case5_1. p->rb == red and (u->rb == black or u == NULL) and cur == p->left and p = g->left >>>> rotate right
+		// case5_2. p->rb == red and (u->rb == black or u == NULL) and cur == p->right and p = g->right >>>> rotate left
 		else
 		{
 			N->P->rb = 'b';
@@ -404,5 +404,12 @@ void RB_t(struct RBnode *R)
 	RB_t(R->R);
 }
 
-//AVLTree
-
+//AVL Tree
+void init(struct AVLnode *R);
+void AVL_Lrotate(struct AVLnode *R);
+void AVL_Rrotate(struct AVLnode *R);
+struct AVLnode *AVL_insertN(struct AVLnode *R, int64 key);
+struct AVLnode *AVL_findN(struct AVLnode *R, int64 key);
+struct AVLnode *AVL_balance(struct AVLnode *N);
+void AVL_traversalN(struct AVLnode *R);	//Postorder
+void AVL_t(struct AVLnode *R);	//Inorder
