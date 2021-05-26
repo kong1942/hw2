@@ -21,8 +21,8 @@ struct LL *L_findN(struct LL *H, int64 key)
 	struct LL *p = H;
 	while(p)
 	{
-		if(p->key != key) p = p->next;
-		else return p;
+		if(p->key == key) return p;
+		p = p->next;
 	}
 	return NULL;
 }
@@ -58,10 +58,7 @@ void A_insertN(struct ARR *T, int64 key)
 struct ARR *A_findN(struct ARR *H, int64 key, int32 size)
 {
 	for(int32 i=0; i<size; i++)
-	{
-		if(H[i].key != key) continue;
-		else return &H[i];
-	}
+		if(H[i].key == key)  return &H[i];
 }
 
 void A_t(struct ARR *H, int32 size)
@@ -439,11 +436,13 @@ void AVL_init(struct AVLnode *R)
 	R->R = NULL;
 }
 
-struct AVLnode *AVL_Rrotate(struct AVLnode *R)
+void AVL_Rrotate(struct AVLnode *R)
 {
 	struct AVLnode *n = R->L;
 	struct AVLnode *p = R->P;
 	struct AVLnode *l = n->R;
+	n->hCnt = 0;
+	R->hCnt = 0;
 	R->L = l;
 	if(l) l->P = R;
 	R->P = n;
@@ -454,18 +453,15 @@ struct AVLnode *AVL_Rrotate(struct AVLnode *R)
 		if(p->L == R) p->L = n;
 		else if(p->R == R) p->R = n;
 	}
-	n->hCnt = 0;
-	R->hCnt = 0;
-	struct AVLnode *root = n;
-	while(root->P) {root = root->P;}
-	return root;
 }
 
-struct AVLnode *AVL_Lrotate(struct AVLnode *R)
+void AVL_Lrotate(struct AVLnode *R)
 {
 	struct AVLnode *n = R->R;
 	struct AVLnode *p = R->P;
 	struct AVLnode *r = n->L;
+	n->hCnt = 0;
+	R->hCnt = 0;
 	R->R = r;
 	if(r) r->P = R;
 	R->P = n;
@@ -476,11 +472,6 @@ struct AVLnode *AVL_Lrotate(struct AVLnode *R)
 		if(p->L == R) p->L = n;
 		else if(p->R == R) p->R = n;
 	}
-	n->hCnt = 0;
-	R->hCnt = 0;
-	struct AVLnode *root = n;
-	while(root->P) {root = root->P;}
-	return root;
 }
 
 struct AVLnode *AVL_insertN(struct AVLnode *R, int64 key)
@@ -530,19 +521,18 @@ struct AVLnode *AVL_insertN(struct AVLnode *R, int64 key)
 			}
 			else return R;
 		}
-		struct AVLnode *root;
 		if(rl == 'r') 
 		{
 			p->R = AVL_insertN(p->R, key);
 		       	p->R->P = p;
 			if(r)
 			{
-				root = AVL_Lrotate(cur);
+				AVL_Lrotate(cur);
 			}
 			else if(l)
 			{
-				root = AVL_Lrotate(p);
-				root = AVL_Rrotate(cur);
+				AVL_Lrotate(p);
+				AVL_Rrotate(cur);
 			}
 			else return R;
 		}
@@ -552,15 +542,17 @@ struct AVLnode *AVL_insertN(struct AVLnode *R, int64 key)
 		       	p->L->P = p;
 			if(r)
 			{
-				root = AVL_Rrotate(p);
-				root = AVL_Lrotate(cur);
+				AVL_Rrotate(p);
+				AVL_Lrotate(cur);
 			}
 			else if(l)
 			{
-				root = AVL_Rrotate(cur);
+				AVL_Rrotate(cur);
 			}
 			else return R;
 		}
+		struct AVLnode *root = cur;
+		while(root->P) {root = root->P;}
 		return root;
 	}
 }

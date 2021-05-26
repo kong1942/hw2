@@ -117,7 +117,6 @@ int main(int argc, char **argv)
 			idiff = (double) (1000000 * (iend.tv_sec - istart.tv_sec) + iend.tv_usec - istart.tv_usec)/1000000;
 			
 			gettimeofday(&qstart, NULL);
-
 			while(fscanf(fp2, "%lld", &num) != EOF)
 			{
 				find = L_findN(head, num);

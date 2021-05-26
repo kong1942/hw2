@@ -94,8 +94,8 @@ struct AVLnode
 	struct AVLnode *R;
 };
 void AVL_init(struct AVLnode *R);
-struct AVLnode *AVL_Lrotate(struct AVLnode *R);
-struct AVLnode *AVL_Rrotate(struct AVLnode *R);
+void AVL_Lrotate(struct AVLnode *R);
+void AVL_Rrotate(struct AVLnode *R);
 struct AVLnode *AVL_insertN(struct AVLnode *R, int64 key);
 struct AVLnode *AVL_findN(struct AVLnode *R, int64 key);
 void AVL_traversalN(struct AVLnode *R);	//Postorder
