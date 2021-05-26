@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include <time.h>
 #define HASHNUM 997
+#define MAXH 2
 #define int32 unsigned int
 #define int64 long long
 #define TRUE 1
@@ -87,16 +88,15 @@ void RB_t(struct RBnode *R);	//Inorder
 struct AVLnode
 {
 	int64 key;
+	int hCnt;
 	struct AVLnode *P;
 	struct AVLnode *L;
 	struct AVLnode *R;
 };
 void AVL_init(struct AVLnode *R);
-void AVL_Lrotate(struct AVLnode *R);
-void AVL_Rrotate(struct AVLnode *R);
+struct AVLnode *AVL_Lrotate(struct AVLnode *R);
+struct AVLnode *AVL_Rrotate(struct AVLnode *R);
 struct AVLnode *AVL_insertN(struct AVLnode *R, int64 key);
 struct AVLnode *AVL_findN(struct AVLnode *R, int64 key);
-struct AVLnode *AVL_balance(struct AVLnode *N);
 void AVL_traversalN(struct AVLnode *R);	//Postorder
 void AVL_t(struct AVLnode *R);	//Inorder
-

@@ -246,6 +246,7 @@ void H_t(struct LL **hTab)
 //4. 任一節點到其leaf的所有簡單路徑都包含相同數目的黑色節點
 void RB_init(struct RBnode *R)
 {
+	R->key = -1;
 	R->rb = 'r';
 	R->P = NULL;
 	R->L = NULL;
@@ -256,7 +257,10 @@ void RB_Lrotate(struct RBnode *R)
 {
 	struct RBnode *n = R->R;
 	struct RBnode *p = R->P;
-	struct RBnode *r = n->L;
+	struct RBnode *r = R->R->L;
+	R->R = r;
+	if(r) r->P = R;
+	R->P = n;
 	n->L = R;
 	n->P = p;
 	if(p)
@@ -264,8 +268,6 @@ void RB_Lrotate(struct RBnode *R)
 		if(p->L == R) p->L = n;
 		else p->R = n;
 	}
-	p = n;
-	n = r;
 }
 
 void RB_Rrotate(struct RBnode *R)
@@ -273,6 +275,9 @@ void RB_Rrotate(struct RBnode *R)
 	struct RBnode *n = R->L;
 	struct RBnode *p = R->P;
 	struct RBnode *l = n->R;
+	R->L = l;
+	if(l) l->P = R;
+	R->P = n;
 	n->R = R;
 	n->P = p;
 	if(p)
@@ -280,18 +285,18 @@ void RB_Rrotate(struct RBnode *R)
 		if(p->L == R) p->L = n;
 		else p->R = n;
 	}
-	p = n;
-	n = l;
 }
 
 struct RBnode *RB_insertN(struct RBnode *R, int64 key)
 {
 	struct RBnode *p;
+	static int first = TRUE;
 	if(R == NULL)
 	{
 		p = (struct RBnode *)malloc(sizeof(struct RBnode));
 		RB_init(p);
 		p->key = key;
+		if(first) {p->rb = 'b'; first = FALSE;}
 		return p;
 	}
 	else
@@ -313,17 +318,19 @@ struct RBnode *RB_insertN(struct RBnode *R, int64 key)
 			}
 			else return R;
 		}
-		if(rl == 'r')
+		if(rl == 'r') 
 		{
 			p->R = RB_insertN(p->R, key);
-			p->R->P = p;
+		       	p->R->P = p;
+		       	q = RB_balance(p->R);
 		}
-		else if(rl == 'l')
+		else if(rl == 'l') 
 		{
 			p->L = RB_insertN(p->L, key);
-			p->L->P = p;
+		       	p->L->P = p;
+		       	q = RB_balance(p->L);
 		}
-		return R;
+		return q;
 	}
 }
 
@@ -332,11 +339,11 @@ struct RBnode *RB_findN(struct RBnode *R, int64 key)
 	struct RBnode *p = R;
 	while(p)
 	{
-			if(key > p->key)
-				p = p->R;
-			else if(key < p->key)
-				p = p->L;
-			else return p;
+		if(key > p->key)
+			p = p->R;
+		else if(key < p->key)
+			p = p->L;
+		else return p;
 	}
 	return NULL;
 }
@@ -345,45 +352,63 @@ struct RBnode *RB_balance(struct RBnode *N)
 {
 	// P = parent node, U = uncle node, G = grandparent node
 	// case1. if node == root, then rb = black
-	if(N->P == NULL) {N->rb = 'b'; return N;}
 	// case2. if p->rb == black, do noting
-	else if(N->P->rb == 'b') return N;
-	else 
+	// case3. p->rb == red and u->rb == red
+	// case4_1. p->rb == red and (u->rb == black or u == NULL) and cur == p->right and p = g->left >>>> rotate left
+	// case4_2. p->rb == red and (u->rb == black or u == NULL) and cur == p->left and p = g->right >>>> rotate right
+	// case5_1. p->rb == red and (u->rb == black or u == NULL) and cur == p->left and p = g->left >>>> rotate right
+	// case5_2. p->rb == red and (u->rb == black or u == NULL) and cur == p->right and p = g->right >>>> rotate left
+	if(N->P == NULL) {N->rb = 'b'; return N;}
+	else if(N->P->rb == 'b')
+	{
+		struct RBnode *root = N;
+		while(root->P) {root = root->P;}
+		return root;
+	}
+	else if(N->P->rb == 'r')
 	{
 		struct RBnode *U;
+		struct RBnode *P = N->P;
 		struct RBnode *G = N->P->P;
-		if(G->L == N->P) U = G->R;
+		if(G->L == P) U = G->R;
 		else U = G->L;
 
-		// case3. p->rb == red and u->rb == red
-		if(N->P->rb == 'r' && U->rb == 'r')
+		if(U && U->rb == 'r')
 		{
-			N->P->rb = 'b';
+			P->rb = 'b';
 			U->rb = 'b';
 			G->rb = 'r';
 			RB_balance(G);
 		}
-		// case4_1. p->rb == red and (u->rb == black or u == NULL) and cur == p->right and p = g->left >>>> rotate left
-		else if(N->P->rb == 'r' && (U == NULL || U->rb == 'b') && N == N->P->R && N->P == G->L)
+		else if(U == NULL || U->rb == 'b')
 		{
-			RB_Lrotate(N->P);
-			RB_balance(N->L);
-		}
-		// case4_2. p->rb == red and (u->rb == black or u == NULL) and cur == p->left and p = g->right >>>> rotate right
-		else if(N->P->rb == 'r' && (U == NULL || U->rb == 'b') && N == N->P->L && N->P == G->R)
-		{
-			RB_Rrotate(N->P);
-			RB_balance(N->R);
-		}
-		// case5_1. p->rb == red and (u->rb == black or u == NULL) and cur == p->left and p = g->left >>>> rotate right
-		// case5_2. p->rb == red and (u->rb == black or u == NULL) and cur == p->right and p = g->right >>>> rotate left
-		else
-		{
-			N->P->rb = 'b';
-			G->rb = 'r';
-			if(N->P->rb == 'r' && (U == NULL || U->rb == 'b') && N == N->P->L && N->P == G->L)
-				RB_Rrotate(G);
-			else RB_Lrotate(G);
+			if(N == P->R && P == G->L)
+			{
+				RB_Lrotate(P);
+				RB_balance(P);
+			}
+			else if(N == P->L && P == G->R)
+			{
+				RB_Rrotate(P);
+				RB_balance(P);
+			}
+			else
+			{
+				if(N == P->L && P == G->L)
+				{
+					P->rb = 'b';
+					G->rb = 'r';
+					RB_Rrotate(G);
+					RB_balance(N);
+				}
+				else if(N == P->R && P == G->R)
+				{
+					P->rb = 'b';
+					G->rb = 'r';
+					RB_Lrotate(G);
+					RB_balance(N);
+				}
+			}
 		}
 	}
 }
@@ -405,11 +430,167 @@ void RB_t(struct RBnode *R)
 }
 
 //AVL Tree
-void init(struct AVLnode *R);
-void AVL_Lrotate(struct AVLnode *R);
-void AVL_Rrotate(struct AVLnode *R);
-struct AVLnode *AVL_insertN(struct AVLnode *R, int64 key);
-struct AVLnode *AVL_findN(struct AVLnode *R, int64 key);
-struct AVLnode *AVL_balance(struct AVLnode *N);
-void AVL_traversalN(struct AVLnode *R);	//Postorder
-void AVL_t(struct AVLnode *R);	//Inorder
+void AVL_init(struct AVLnode *R)
+{
+	R->key = -1;
+	R->hCnt = 0;
+	R->P = NULL;
+	R->L = NULL;
+	R->R = NULL;
+}
+
+struct AVLnode *AVL_Rrotate(struct AVLnode *R)
+{
+	struct AVLnode *n = R->L;
+	struct AVLnode *p = R->P;
+	struct AVLnode *l = n->R;
+	R->L = l;
+	if(l) l->P = R;
+	R->P = n;
+	n->R = R;
+	n->P = p;
+	if(p)
+	{
+		if(p->L == R) p->L = n;
+		else if(p->R == R) p->R = n;
+	}
+	n->hCnt = 0;
+	R->hCnt = 0;
+	struct AVLnode *root = n;
+	while(root->P) {root = root->P;}
+	return root;
+}
+
+struct AVLnode *AVL_Lrotate(struct AVLnode *R)
+{
+	struct AVLnode *n = R->R;
+	struct AVLnode *p = R->P;
+	struct AVLnode *r = n->L;
+	R->R = r;
+	if(r) r->P = R;
+	R->P = n;
+	n->L = R;
+	n->P = p;
+	if(p)
+	{
+		if(p->L == R) p->L = n;
+		else if(p->R == R) p->R = n;
+	}
+	n->hCnt = 0;
+	R->hCnt = 0;
+	struct AVLnode *root = n;
+	while(root->P) {root = root->P;}
+	return root;
+}
+
+struct AVLnode *AVL_insertN(struct AVLnode *R, int64 key)
+{
+	struct AVLnode *p;
+	if(R == NULL)
+	{
+		p = (struct AVLnode *)malloc(sizeof(struct AVLnode));
+		AVL_init(p);
+		p->key = key;
+		return p;
+	}
+	else
+	{
+		int l = FALSE, r = FALSE;
+		char rl = '\0';
+		struct AVLnode *cur = NULL;
+		struct AVLnode *q = R;
+		while(q)
+		{
+			p = q;
+			if(key > q->key)
+			{
+				q = q->R;
+				rl = 'r';
+				p->hCnt++;
+				if(abs(p->hCnt) == MAXH)
+				{
+					p->hCnt--;
+					cur = p;
+					r = TRUE;
+					l = FALSE;
+				}
+			}
+			else if(key < q->key)
+			{
+				q = q->L;
+				rl = 'l';
+				p->hCnt--;
+				if(abs(p->hCnt) == MAXH)
+				{
+					p->hCnt++;
+					cur = p;
+					l = TRUE;
+					r = FALSE;
+				}
+			}
+			else return R;
+		}
+		struct AVLnode *root;
+		if(rl == 'r') 
+		{
+			p->R = AVL_insertN(p->R, key);
+		       	p->R->P = p;
+			if(r)
+			{
+				root = AVL_Lrotate(cur);
+			}
+			else if(l)
+			{
+				root = AVL_Lrotate(p);
+				root = AVL_Rrotate(cur);
+			}
+			else return R;
+		}
+		else if(rl == 'l') 
+		{
+			p->L = AVL_insertN(p->L, key);
+		       	p->L->P = p;
+			if(r)
+			{
+				root = AVL_Rrotate(p);
+				root = AVL_Lrotate(cur);
+			}
+			else if(l)
+			{
+				root = AVL_Rrotate(cur);
+			}
+			else return R;
+		}
+		return root;
+	}
+}
+
+struct AVLnode *AVL_findN(struct AVLnode *R, int64 key)
+{
+	struct AVLnode *p = R;
+	while(p)
+	{
+		if(key > p->key)
+			p = p->R;
+		else if(key < p->key)
+			p = p->L;
+		else return p;
+	}
+	return NULL;
+}
+
+void AVL_traversalN(struct AVLnode *R)	//Postorder
+{
+	if(R == NULL) return;
+	AVL_traversalN(R->L);
+	AVL_traversalN(R->R);
+	free(R);
+}
+
+void AVL_t(struct AVLnode *R)	//Inorder
+{
+	if(R == NULL) return;
+	AVL_t(R->L);
+	printf("%lld\n", R->key);
+	AVL_t(R->R);
+}
