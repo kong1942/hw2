@@ -201,8 +201,8 @@ struct LL *H_findN(struct LL **hTab, int64 key)
 	struct LL *p = hTab[hash];
 	while(p)
 	{
-		if(p->key != key) p = p->next;
-		else return p;
+		if(p->key == key) return p;
+		p = p->next;
 	}
 	return NULL;
 }
