@@ -59,6 +59,7 @@ struct ARR *A_findN(struct ARR *H, int64 key, int32 size)
 {
 	for(int32 i=0; i<size; i++)
 		if(H[i].key == key)  return &H[i];
+	return NULL;
 }
 
 void A_t(struct ARR *H, int32 size)
