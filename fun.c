@@ -162,6 +162,7 @@ struct BST *T_findN(struct BST *R, int64 key)
 		}
 		else return p;
 	}
+	return NULL;
 }
 
 void T_traversalN(struct BST *R)
